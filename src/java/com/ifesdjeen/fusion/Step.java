@@ -1,41 +1,28 @@
 package com.ifesdjeen.fusion;
 
-public class Step<T> {
+public class Step {
 
+  private State state;
+  private Object item;
 
-  public static class Done<T> extends Step<T> {
-
+  public Step(State state, Object item) {
+    this.state = state;
+    this.item = item;
   }
 
-  public static class Skip<T> extends Step<T> {
-
-    private final Stream<T> stream;
-
-    public Skip(Stream<T> stream) {
-      this.stream = stream;
-    }
-
-    public Stream<T> getStream() {
-      return stream;
-    }
+  public State getState() {
+    return state;
   }
 
-  public static class Yield<T> extends Step<T> {
+  public <T> T getItem() {
+    return (T)item;
+  }
 
-    private final T         item;
-    private final Stream<T> stream;
+  public void setState(State state) {
+    this.state = state;
+  }
 
-    public Yield(Stream<T> stream, T item) {
-      this.stream = stream;
-      this.item = item;
-    }
-
-    public T getItem() {
-      return item;
-    }
-
-    public Stream<T> getStream() {
-      return stream;
-    }
+  public void setItem(Object item) {
+    this.item = item;
   }
 }
