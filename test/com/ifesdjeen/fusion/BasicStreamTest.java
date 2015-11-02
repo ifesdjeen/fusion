@@ -5,7 +5,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.function.BinaryOperator;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 public class BasicStreamTest {
@@ -28,9 +28,14 @@ public class BasicStreamTest {
 
       {
         long beginning = System.currentTimeMillis();
-        List<Integer> l2 = Operation.toList(Operation.map((i) -> i + 1,
-                                                          Operation.filter((Integer i) -> i % 2 == 0,
-                                                                           Stream.fromList(l))));
+        List<Integer> l2 = new ArrayList<>();
+        Stream.fromList(l,
+                        Operation.filter((Integer i) -> i % 2 == 0,
+                                         Operation.map((i) -> i + 1,
+                                                       Operation.toList(l2))));
+        //        List<Integer> l2 = Operation.toList(Operation.map((i) -> i + 1,
+        //                                                          Operation.filter((Integer i) -> i % 2 == 0,
+        //                                                                           Stream.fromList(l))));
         System.out.println(l2.get(l2.size() - 1));
         System.out.println("Fusion: " + (System.currentTimeMillis() - beginning));
       }
@@ -62,12 +67,13 @@ public class BasicStreamTest {
 
       {
         long beginning = System.currentTimeMillis();
-        Integer l2 = Operation.fold(Operation.map((i) -> i + 1,
-                                                  Operation.filter((i) -> i % 2 == 0,
-                                                                   Stream.fromList(l))),
-                                    0,
-                                    (acc, i) -> acc + i);
-        System.out.println(l2);
+
+        AtomicReference<Integer> ref = new AtomicReference<>(0);
+        Stream.fromList(l,
+                        Operation.filter((Integer i) -> i % 2 == 0,
+                                         Operation.map((i) -> i + 1,
+                                                       Operation.fold(ref, (acc, i) -> acc + i))));
+        System.out.println(ref.get());
         System.out.println("Fusion: " + (System.currentTimeMillis() - beginning));
       }
     }
@@ -82,11 +88,38 @@ public class BasicStreamTest {
     }
 
     {
-      long beginning = System.currentTimeMillis();
-      List<Integer> l2 = Operation.toList(Operation.filter((Integer i) -> i % 2 == 0,
-                                                           Operation.map((i) -> i + 1,
-                                                                         Stream.fromList(l))));
-      System.out.println(l2);
+      AtomicReference<Integer> ref = new AtomicReference<>(0);
+      Stream.fromList(l,
+                      Operation.filter((Integer i) -> i % 2 == 0,
+                                       Operation.map((i) -> i + 1,
+                                                     Operation.fold(ref, (acc, i) -> acc + i))));
+      System.out.println(ref.get());
+    }
+
+  }
+
+  @Test
+  public void testFusion() {
+    List<Integer> l = new ArrayList();
+    for (int i = 0; i < 5; i++) {
+      l.add(i);
+    }
+
+    {
+      AtomicReference<Integer> ref1 = new AtomicReference<>(0);
+      Stream.fromList(l,
+                      new Fusion<Integer, Integer>().filter((i) -> i % 2 == 0)
+                                                    .map((i) -> i + 1)
+                                                    .fold(ref1,
+                                                          (acc, i) -> acc + i));
+      System.out.println(ref1.get());
+
+      AtomicReference<Integer> ref = new AtomicReference<>(0);
+      Stream.fromList(l,
+                      Operation.filter((Integer i) -> i % 2 == 0,
+                                       Operation.map((i) -> i + 1,
+                                                     Operation.fold(ref, (acc, i) -> acc + i))));
+      System.out.println(ref.get());
     }
 
   }
