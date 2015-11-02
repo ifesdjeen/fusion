@@ -1,4 +1,4 @@
-# Fusion - Stream Fusion and complex aggregates for CassandraClusterConfig
+# Fusion - Stream Fusion and complex aggregates
 
 This is an attempt to implement Stream Fusion API in Java. The main feature of the
 fused stream is the ability to have an intermediate result on the each step of the
