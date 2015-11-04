@@ -8,7 +8,7 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-public class BasicStreamTest {
+public class BenchmarkTests {
 
   @Test
   public void testOperation() {
@@ -33,9 +33,6 @@ public class BasicStreamTest {
                         Operation.filter((Integer i) -> i % 2 == 0,
                                          Operation.map((i) -> i + 1,
                                                        Operation.toList(l2))));
-        //        List<Integer> l2 = Operation.toList(Operation.map((i) -> i + 1,
-        //                                                          Operation.filter((Integer i) -> i % 2 == 0,
-        //                                                                           Stream.fromList(l))));
         System.out.println(l2.get(l2.size() - 1));
         System.out.println("Fusion: " + (System.currentTimeMillis() - beginning));
       }
