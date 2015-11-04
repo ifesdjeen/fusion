@@ -30,8 +30,6 @@ public interface Operation<FROM, TO> extends Consumer<FROM> {
     return (a) -> {
       ACC d = init.updateAndGet((current) -> foldf.apply(current, a));
     };
-
-
   }
 
   public static <T> Consumer<T> toList(List<T> list) {
