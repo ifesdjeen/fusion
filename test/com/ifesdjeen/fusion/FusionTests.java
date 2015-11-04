@@ -57,4 +57,17 @@ public class FusionTests {
               Arrays.asList(1, 2, 3, 4, 5)).iterator());
     assertThat(res, is(3+5));
   }
+
+  @Test
+  public void testTake() {
+    Integer res = new Fusion<Integer, Integer>()
+      .take(5)
+      .filter((i) -> i % 2 == 0)
+      .map((i) -> i + 1)
+      .fold(0,
+            (acc, i) -> acc + i,
+            new ArrayList<>(
+              Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)).iterator());
+    assertThat(res, is(3+5));
+  }
 }
