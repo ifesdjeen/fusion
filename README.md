@@ -26,13 +26,12 @@ is a lot like [Clojure transducers](http://clojure.org/transducers).
 
 # How does it work?
 
-The simple example is to fold the list, by `taking` first 5 items from it, `filtering`
-only the even items, then `mapping` the filtered items by incrementing them by one
-and then `folding` them together into the sum:
+The simple example is to fold the list, by `filtering` only the even items, then
+`mapping` the filtered items by incrementing them by one and then `folding` them
+together into the sum:
 
 ```java
 Integer res = new Fusion<Integer, Integer>()
-    .take(5)
     .filter((i) -> i % 2 == 0)
     .map((i) -> i + 1)
     .fold(0,
@@ -41,20 +40,32 @@ Integer res = new Fusion<Integer, Integer>()
 ```
 
 The way the operations are going to be combined looks something like that:
-  * as a top-level consumer, you will have a `take` wrapper
-  * if
+  * as a top-level consumer, you will have a `filter` wrapper
+  * `filter` will call the `map` if the predicate returns true
+  * `map` will trigger a call to `fold`
+
+All these three items will be "fused" into the single consumer, which would
+be an equivalent of the following code:
 
 ```
 AtomicInteger result = 0;
 Consumer<Integer> consumer = (Integer i) -> {
-  if (i % 2 == 0) {
-    int iPrime = i + 1;
+  if (i % 2 == 0) {                // filter
+    int iPrime = i + 1;            // map
 
-    result.updateAndGet((old) -> {
+    result.updateAndGet((old) -> { //fold
       return old + iPrime;
     });
   }
 };
+
+// Iteration
+Iterator<Integer> inter = new ArrayList<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)).iterator();
+while (iter.hasNext()) {
+  consumer.accept(iter.next());
+}
+
+Integer final = result.get();      // Final result
 ```
 
 # License
