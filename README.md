@@ -47,7 +47,7 @@ The way the operations are going to be combined looks something like that:
 All these three items will be "fused" into the single consumer, which would
 be an equivalent of the following code:
 
-```
+```java
 AtomicInteger result = 0;
 Consumer<Integer> consumer = (Integer i) -> {
   if (i % 2 == 0) {                // filter
@@ -67,6 +67,12 @@ while (iter.hasNext()) {
 
 Integer final = result.get();      // Final result
 ```
+
+# Current plans
+
+  * Split tables for Cassandra
+  * Mesos work distribution for parallel and distributed computations
+  * Monoidal results
 
 # License
 
