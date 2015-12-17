@@ -38,4 +38,5 @@ public interface Operation<FROM, TO> extends Consumer<FROM> {
     };
   }
 
+  // TODO: zip fusions
 }
