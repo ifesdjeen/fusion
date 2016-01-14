@@ -1,16 +1,20 @@
 # Faster Java Streams
 
-Stream fusion is a concept of combining several operations that are usually split
-in chunks into a single-step op. For example, if you have a rather long list, and
-you would like to first `filter` it, then `map` it and finally `fold` it to some
-value, you would usually have to keep the elements from the previous step in order
-to start with the next one.
+Stream fusion is a concept of combining multiple operations into the single step.
+For example, if you have a rather long list, and you would like to first `filter`
+it, then `map` it and finally `fold` it to some value, you would usually have to
+keep the elements from the previous step in order to start with the next one.
 
-Stream fusion combines `filter` `map` and `fold` into a single step operation
+`Fusion` combines `filter` `map` and `fold` into a single step operation
 which is applied to every single item that is coming within the stream, therefore
 after processing an item through an entire topology you don't have to store any
-intermediate results at all. Someone has pointed out that the idea of stream fusion
-is a lot like [Clojure transducers](http://clojure.org/transducers).
+intermediate results at all.
+
+Someone has pointed out that the idea of stream fusion is a bit like
+[Clojure transducers](http://clojure.org/transducers).
+
+`Fusion` is also introducing a concept of `Either`, which helps to combine
+operations that may fail without explicit exception handling on each step.
 
 # How does it work?
 
