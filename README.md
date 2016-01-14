@@ -1,16 +1,4 @@
-# Fusion - Stream Fusion and complex aggregates
-
-This is an attempt to implement Stream Fusion API in Java. The main feature of the
-fused stream is the ability to have an intermediate result on the each step of the
-processing, which makes it very appealing for processing of the large amounts of data.
-
-You can learn more about stream fusion by reading the paper on the Stream Fusion:
-[From Streams to lists to nothing at all](http://citeseer.ist.psu.edu/viewdoc/download?doi=10.1.1.104.7401&rep=rep1&type=pdf).
-
-Java implementation will certainly never be as elegant and concise as the Haskell
-one, but we still decided to give it a try after seeing how well the Haskell version worked.
-
-# What is stream fusion and why do I need it?
+# Faster Java Streams
 
 Stream fusion is a concept of combining several operations that are usually split
 in chunks into a single-step op. For example, if you have a rather long list, and
@@ -68,11 +56,17 @@ while (iter.hasNext()) {
 Integer final = result.get();      // Final result
 ```
 
-# Current plans
+# Fusion - Stream Fusion and complex aggregates
 
-  * Split tables for Cassandra
-  * Mesos work distribution for parallel and distributed computations
-  * Monoidal results
+This is an attempt to implement Stream Fusion API in Java. The main feature of the
+fused stream is the ability to have an intermediate result on the each step of the
+processing, which makes it very appealing for processing of the large amounts of data.
+
+You can learn more about stream fusion by reading the paper on the Stream Fusion:
+[From Streams to lists to nothing at all](http://citeseer.ist.psu.edu/viewdoc/download?doi=10.1.1.104.7401&rep=rep1&type=pdf).
+
+Java implementation will certainly never be as elegant and concise as the Haskell
+one, but we still decided to give it a try after seeing how well the Haskell version worked.
 
 # License
 
