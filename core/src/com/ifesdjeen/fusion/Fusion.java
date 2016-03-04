@@ -3,6 +3,7 @@ package com.ifesdjeen.fusion;
 import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -16,17 +17,26 @@ import java.util.function.Predicate;
 public class Fusion<INIT, FROM> {
 
   private final List<Function<Consumer, Consumer>> suppliers;
+  // Replace AtomicBoolan by some more lightweight construct
   private final AtomicBoolean                      doBreak;
+  private final List<INIT>                   iterator;
 
-  public Fusion() {
+  public static <T> Fusion<T, T> from(List<T> s) {
+    return new Fusion<>(s);
+  }
+
+  protected Fusion(List<INIT> iterator) {
     this(new ArrayList<>(),
-         new AtomicBoolean());
+         new AtomicBoolean(),
+         iterator);
   }
 
   protected Fusion(List<Function<Consumer, Consumer>> suppliers,
-                   AtomicBoolean doBreak) {
+                   AtomicBoolean doBreak,
+                   List<INIT> iterator) {
     this.suppliers = suppliers;
     this.doBreak = doBreak;
+    this.iterator = iterator;
   }
 
   public <TO> Fusion<INIT, TO> map(Function<FROM, TO> fn) {
@@ -55,7 +65,7 @@ public class Fusion<INIT, FROM> {
   }
 
   protected <TO> Fusion<INIT, TO> downstream() {
-    return new Fusion<INIT, TO>(suppliers, doBreak);
+    return new Fusion<INIT, TO>(suppliers, doBreak, iterator);
   }
 
   public Consumer<INIT> end(AtomicReference<FROM> init) {
@@ -74,27 +84,9 @@ public class Fusion<INIT, FROM> {
     return stack;
   }
 
-  public <ACC> Consumer<INIT> fold(AtomicReference<ACC> init,
-                                   BiFunction<ACC, FROM, ACC> fold) {
-    List<Function<Consumer, Consumer>> reversed = Lists.reverse(suppliers);
-    Consumer stack = new Consumer<FROM>() {
-      @Override
-      public void accept(FROM o) {
-        init.updateAndGet((old) -> fold.apply(old, o));
-      }
-    };
-
-    for (Function<Consumer, Consumer> gen : reversed) {
-      stack = gen.apply(stack);
-    }
-
-    return stack;
-  }
-
   @SuppressWarnings("unchecked")
   public <ACC> ACC fold(ACC init,
-                        BiFunction<ACC, FROM, ACC> fold,
-                        Iterator<INIT> iterator) {
+                        BiFunction<ACC, FROM, ACC> fold) {
     List<Function<Consumer, Consumer>> reversed = Lists.reverse(suppliers);
     FusionFinaliser<FROM, ACC> finalizer = new FusionFinaliser<>(init,
                                                                  fold);
@@ -104,12 +96,15 @@ public class Fusion<INIT, FROM> {
     }
 
     Consumer<INIT> finalized = (Consumer<INIT>) stack;
-    while (iterator.hasNext()) {
-      if (doBreak.get()) {
-        break;
-      }
-      finalized.accept(iterator.next());
-    }
+    iterator.forEach(finalized::accept);
+
+//    while (iterator.hasNext()) {
+//      if (doBreak.get()) {
+//        break;
+//      }
+//      finalized.accept(iterator.next());
+//    }
     return finalizer.get();
   }
+
 }

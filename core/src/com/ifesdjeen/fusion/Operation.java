@@ -25,18 +25,5 @@ public interface Operation<FROM, TO> extends Consumer<FROM> {
     };
   }
 
-  public static <ACC, T> Consumer<T> fold(AtomicReference<ACC> init,
-                                          BiFunction<ACC, T, ACC> foldf) {
-    return (a) -> {
-      ACC d = init.updateAndGet((current) -> foldf.apply(current, a));
-    };
-  }
-
-  public static <T> Consumer<T> toList(List<T> list) {
-    return (a) -> {
-      list.add(a);
-    };
-  }
-
   // TODO: zip fusions
 }
