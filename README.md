@@ -60,6 +60,12 @@ while (iter.hasNext()) {
 Integer final = result.get();      // Final result
 ```
 
+# Cooperative parallelism
+
+# Thread affinity
+
+# Continuations
+
 # Fusion - Stream Fusion and complex aggregates
 
 This is an attempt to implement Stream Fusion API in Java. The main feature of the
