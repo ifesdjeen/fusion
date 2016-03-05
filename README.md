@@ -78,6 +78,25 @@ You can learn more about stream fusion by reading the paper on the Stream Fusion
 Java implementation will certainly never be as elegant and concise as the Haskell
 one, but we still decided to give it a try after seeing how well the Haskell version worked.
 
+# Primitive streams
+
+# Map Streams
+
+# JMH Benchmarks
+
+One of the main goals for the project is to maintain a minimal memory footprint,
+avoid batching and operate on the primary existing data structures.
+
+```
+Benchmark                     (times)   Mode  Cnt       Score      Error  Units
+Benchmark.testFoldFusion         1000  thrpt    5  121032.957 ± 8196.370  ops/s
+Benchmark.testFoldFusion        10000  thrpt    5   11895.739 ± 1403.678  ops/s
+Benchmark.testFoldFusion       100000  thrpt    5    1000.866 ±  209.908  ops/s
+Benchmark.testFoldJavaStream     1000  thrpt    5  123787.341 ± 2618.969  ops/s
+Benchmark.testFoldJavaStream    10000  thrpt    5   12657.628 ±  819.217  ops/s
+Benchmark.testFoldJavaStream   100000  thrpt    5    1323.071 ±  179.718  ops/s
+```
+
 # License
 
 Copyright(C) 2015-2016 Alex Petrov
