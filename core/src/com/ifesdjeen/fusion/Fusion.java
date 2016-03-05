@@ -1,110 +1,91 @@
 package com.ifesdjeen.fusion;
 
-import com.google.common.collect.Lists;
-
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public class Fusion<INIT, FROM> {
+public abstract class Fusion<INIT, FROM> { // TODO: COVARIANT extends Fusion
 
-  private final List<Function<Consumer, Consumer>> suppliers;
-  // Replace AtomicBoolan by some more lightweight construct
-  private final AtomicBoolean                      doBreak;
-  private final List<INIT>                   iterator;
+  protected final List<Function<Consumer, Consumer>> suppliers;
 
-  public static <T> Fusion<T, T> from(List<T> s) {
-    return new Fusion<>(s);
+  public static <T> SyncFusion<T, T> from(List<T> s) {
+    return new ListFusion<>(s);
   }
 
-  protected Fusion(List<INIT> iterator) {
-    this(new ArrayList<>(),
-         new AtomicBoolean(),
-         iterator);
+  public static <T> SyncFusion<T, T> from(Iterator<T> s) {
+    return new IteratorFusion<>(s);
   }
 
-  protected Fusion(List<Function<Consumer, Consumer>> suppliers,
-                   AtomicBoolean doBreak,
-                   List<INIT> iterator) {
+  public static <T> AsyncFusion<T, T> async() {
+    return new AsyncFusion<>();
+  }
+
+  protected Fusion(List<Function<Consumer, Consumer>> suppliers) {
     this.suppliers = suppliers;
-    this.doBreak = doBreak;
-    this.iterator = iterator;
   }
 
   public <TO> Fusion<INIT, TO> map(Function<FROM, TO> fn) {
-    suppliers.add((downstream) -> Operation.map(fn, downstream));
-    return downstream();
+    return downstream(new Function<Consumer<TO>, Consumer<FROM>>() {
+      @Override
+      public Consumer<FROM> apply(Consumer<TO> downstream) {
+        return (FROM i) -> {
+          downstream.accept(fn.apply(i));
+        };
+      }
+    });
   }
 
   public Fusion<INIT, FROM> filter(Predicate<FROM> pred) {
-    suppliers.add((downstream) -> Operation.filter(pred, downstream));
-    return downstream();
-  }
-
-  public Fusion<INIT, FROM> take(int howMany) {
-    suppliers.add((downstream) -> {
-      AtomicInteger countdown = new AtomicInteger(howMany);
-      return (i) -> {
-        downstream.accept(i);
-        int more = countdown.decrementAndGet();
-        if (more == 0) {
-          doBreak.set(true);
+    return downstream((Consumer<FROM> downstream) -> {
+      return (FROM i) -> {
+        if (pred.test(i)) {
+          downstream.accept(i);
         }
       };
-
     });
-    return downstream();
   }
 
-  protected <TO> Fusion<INIT, TO> downstream() {
-    return new Fusion<INIT, TO>(suppliers, doBreak, iterator);
-  }
+  // allMatch(Predicate<? super T> predicate)
+  // anyMatch(Predicate<? super T> predicate)
+  // collect(Collector<? super T,A,R> collector)
+  // concat(Stream<? extends T> a, Stream<? extends T> b)
+  // count()
+  // filter(Predicate<? super T> predicate)
+  // findAny()
+  // findFirst()
+  // flatMap(Function<? super T,? extends Stream<? extends R>> mapper)
+  // forEach(Consumer<? super T> action)
+  // limit(long maxSize)
+  // noneMatch(Predicate<? super T> predicate)
+  // sorted()
+  // sorted(Comparator<? super T> comparator)
 
-  public Consumer<INIT> end(AtomicReference<FROM> init) {
-    List<Function<Consumer, Consumer>> reversed = Lists.reverse(suppliers);
-    Consumer stack = new Consumer<FROM>() {
-      @Override
-      public void accept(FROM o) {
-        init.set(o);
-      }
-    };
+  // fork
 
-    for (Function<Consumer, Consumer> gen : reversed) {
-      stack = gen.apply(stack);
-    }
+  //
 
-    return stack;
-  }
+  // distinct()
+  //public abstract Fusion<INIT, FROM> take(int howMany);
+
+  // TODO: implemen take in terms of shortened fusion
+  //   {
+  //    return downstream((downstream) -> {
+  //      AtomicInteger countdown = new AtomicInteger(howMany);
+  //      return (i) -> {
+  //        downstream.accept(i);
+  //        int more = countdown.decrementAndGet();
+  //        if (more == 0) {
+  //          doBreak.set(true);
+  //        }
+  //      };
+  //
+  //    });
+  //  }
 
   @SuppressWarnings("unchecked")
-  public <ACC> ACC fold(ACC init,
-                        BiFunction<ACC, FROM, ACC> fold) {
-    List<Function<Consumer, Consumer>> reversed = Lists.reverse(suppliers);
-    FusionFinaliser<FROM, ACC> finalizer = new FusionFinaliser<>(init,
-                                                                 fold);
-    Consumer stack = finalizer;
-    for (Function<Consumer, Consumer> gen : reversed) {
-      stack = gen.apply(stack);
-    }
-
-    Consumer<INIT> finalized = (Consumer<INIT>) stack;
-    iterator.forEach(finalized::accept);
-
-//    while (iterator.hasNext()) {
-//      if (doBreak.get()) {
-//        break;
-//      }
-//      finalized.accept(iterator.next());
-//    }
-    return finalizer.get();
-  }
+  protected abstract <TO> Fusion<INIT, TO> downstream(Function<Consumer<TO>, Consumer<FROM>> constructor);
 
 }
