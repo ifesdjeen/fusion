@@ -9,6 +9,7 @@ import java.util.concurrent.Future;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 // TODO: hide the <FROM> parameter in the inner class or/and
 // simply expose the publisher with `notify`
@@ -33,8 +34,10 @@ public class AsyncFusion<INIT, FROM> extends Fusion<INIT, FROM> {
       public void run() {
         while (true) {
           INIT el = runQueue.poll();
-          for (Consumer<INIT> consumer : consumers) {
-            consumer.accept(el);
+          if (el != null) {
+            for (Consumer<INIT> consumer : consumers) {
+              consumer.accept(el);
+            }
           }
         }
       }
@@ -42,8 +45,17 @@ public class AsyncFusion<INIT, FROM> extends Fusion<INIT, FROM> {
   }
 
   @Override
+  public <TO> AsyncFusion<INIT, TO> map(Function<FROM, TO> fn) {
+    return (AsyncFusion<INIT, TO>) super.map(fn);
+  }
+
+  public AsyncFusion<INIT, FROM> filter(Predicate<FROM> pred) {
+    return (AsyncFusion<INIT, FROM>) super.filter(pred);
+  }
+
+  @Override
   @SuppressWarnings("unchecked")
-  protected <TO> Fusion<INIT, TO> downstream(Function<Consumer<TO>, Consumer<FROM>> constructor) {
+  protected <TO> AsyncFusion<INIT, TO> downstream(Function<Consumer<TO>, Consumer<FROM>> constructor) {
     suppliers.add((Function<Consumer, Consumer>) (Function) constructor);
     return new AsyncFusion<INIT, TO>(suppliers, consumers);
   }
