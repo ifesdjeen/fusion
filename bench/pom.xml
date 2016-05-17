@@ -6,7 +6,7 @@
   <packaging>jar</packaging>
 
   <parent>
-    <groupId>com.ifesdjeen</groupId>
+    <groupId>com.github.ifesdjeen</groupId>
     <version>0.0.1-SNAPSHOT</version>
     <artifactId>fusion-parent</artifactId>
   </parent>
