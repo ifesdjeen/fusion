@@ -69,11 +69,7 @@ public class FusionTest {
 //    assertThat(res, is(3 + 5));
 //  }
 
-  @Test
-  public void testAsync() {
-    AsyncFusion<Integer, Integer> fusion = Fusion.<Integer>async();
-    fusion.map((i) -> i + 1)
-      .filter((i) -> i % 2 == 0)
-      .
-  }
+
 }
+
+
